@@ -1,555 +1,534 @@
 #include "timer.h"
 
-void Timer::start(){
+void Timer::start() {
 	display();
 }
 
-void Timer::display(){
+void Timer::display() {
+	unsigned char hour, minute, second;
+	String s = "", s2 = "", s3 = "";
 
-	unsigned char hour,minute,second;
-	String s="", s2="", s3="";
-	
-	xSemaphoreTake(mutex_timer,portMAX_DELAY);
+	xSemaphoreTake(mutex_timer, portMAX_DELAY);
 
-	switch (state)
-	{
-	case chronograph:
-		hour=hour_c;
-		minute=minute_c;
-		second=second_c;
-		break;
-	
-	default:
-		hour=hour_t;
-		minute=minute_t;
-		second=second_t;
-		break;
+	switch (state) {
+		case chronograph:
+			hour = hour_c;
+			minute = minute_c;
+			second = second_c;
+			break;
+
+		default:
+			hour = hour_t;
+			minute = minute_t;
+			second = second_t;
+			break;
 	}
 
-	if(hour<10){
-		s=s+"0";
-		s=s+String(hour);
-	}else{
-		s=s+String(hour);
+	if (hour < 10) {
+		s = s + "0";
+		s = s + String(hour);
+	} else {
+		s = s + String(hour);
 	}
 
-	s=s+":";
+	s = s + ":";
 
-	if(minute<10){
-		s=s+"0";
-		s=s+String(minute);
-	}else{
-		s=s+String(minute);
+	if (minute < 10) {
+		s = s + "0";
+		s = s + String(minute);
+	} else {
+		s = s + String(minute);
 	}
 
-	s2=":";
+	s2 = ":";
 
-	if(second<10){
-		s2=s2+"0";
-		s2=s2+String(second);
-	}else{
-		s2=s2+String(second);
+	if (second < 10) {
+		s2 = s2 + "0";
+		s2 = s2 + String(second);
+	} else {
+		s2 = s2 + String(second);
 	}
-	
+
 	xSemaphoreGive(mutex_timer);
-	
-	switch (state)
-	{
-	case chronograph:
 
-		Display::clear();
-		
-		Display::setFont(arial_10);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 0, "Chronograph");
+	switch (state) {
+		case chronograph:
 
-		Display::drawHorizontalLine(0,12,128);
+			Display::clear();
 
-		Display::setFont(arial_24);
-		Display::setTextAlignment(center);
-		Display::drawString(52, 14, s);
-		
-		Display::setFont(arial_16);
-		Display::setTextAlignment(left);
-		Display::drawString(84, 20, s2);
+			Display::setFont(arial_10);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 0, "Chronograph");
 
-		Display::display();
-		break;
-	
-	case timer:
-
-		Display::clear();
-		
-		Display::setFont(arial_10);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 0, "Timer");
-
-		Display::drawHorizontalLine(0,12,128);
-
-		Display::setFont(arial_24);
-		Display::setTextAlignment(center);
-		Display::drawString(52, 14, s);
-		
-		Display::setFont(arial_16);
-		Display::setTextAlignment(left);
-		Display::drawString(84, 20, s2);
-
-		Display::display();
-
-		break;
-
-	case timer_adjust_hours:
-
-		Display::clear();
-		
-		Display::setFont(arial_10);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 0, "Timer");
-
-		Display::drawHorizontalLine(0,12,128);
-
-		Display::setFont(arial_24);
-		Display::setTextAlignment(center);
-		Display::drawString(52, 14, s);
-		
-		Display::setFont(arial_16);
-		Display::setTextAlignment(left);
-		Display::drawString(84, 20, s2);
-
-		Display::fillRect(24,40,24,2);
-
-		Display::display();
-
-		break;
-	
-	case timer_adjust_minutes:
-
-		Display::clear();
-		
-		Display::setFont(arial_10);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 0, "Timer");
-
-		Display::drawHorizontalLine(0,12,128);
-
-		Display::setFont(arial_24);
-		Display::setTextAlignment(center);
-		Display::drawString(52, 14, s);
-		
-		Display::setFont(arial_16);
-		Display::setTextAlignment(left);
-		Display::drawString(84, 20, s2);
-
-		Display::fillRect(57,40,24,2);
-
-		Display::display();
-
-		break;
-
-	case timer_end:
-
-		Display::clear();
-		
-		Display::setFont(arial_10);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 0, "Timer");
-
-		Display::drawHorizontalLine(0,12,128);
-
-		if(end_blink){
+			Display::drawHorizontalLine(0, 12, 128);
 
 			Display::setFont(arial_24);
 			Display::setTextAlignment(center);
 			Display::drawString(52, 14, s);
-			
+
 			Display::setFont(arial_16);
 			Display::setTextAlignment(left);
 			Display::drawString(84, 20, s2);
-		}
 
-		Display::display();
+			Display::display();
+			break;
 
+		case timer:
 
-		break;
-	
-	default:
+			Display::clear();
 
-		Display::clear();
-		
-		Display::setFont(arial_10);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 0, "Timer");
+			Display::setFont(arial_10);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 0, "Timer");
 
-		Display::drawHorizontalLine(0,12,128);
+			Display::drawHorizontalLine(0, 12, 128);
 
-		Display::setFont(arial_24);
-		Display::setTextAlignment(center);
-		Display::drawString(52, 14, s);
-		
-		Display::setFont(arial_16);
-		Display::setTextAlignment(left);
-		Display::drawString(84, 20, s2);
+			Display::setFont(arial_24);
+			Display::setTextAlignment(center);
+			Display::drawString(52, 14, s);
 
-		Display::fillRect(84,40,24,2);
+			Display::setFont(arial_16);
+			Display::setTextAlignment(left);
+			Display::drawString(84, 20, s2);
 
-		Display::display();
+			Display::display();
 
-		break;
-	}
-	
-}
+			break;
 
-void Timer::but_up_left(){
+		case timer_adjust_hours:
 
-	switch (state)
-	{
-	case chronograph:
+			Display::clear();
 
-		App::exit_app();
-		
-		break;
-	
-	case timer:
+			Display::setFont(arial_10);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 0, "Timer");
 
-		state = chronograph;
+			Display::drawHorizontalLine(0, 12, 128);
 
-		display();
+			Display::setFont(arial_24);
+			Display::setTextAlignment(center);
+			Display::drawString(52, 14, s);
 
-		break;
+			Display::setFont(arial_16);
+			Display::setTextAlignment(left);
+			Display::drawString(84, 20, s2);
 
-	case timer_adjust_hours:
+			Display::fillRect(24, 40, 24, 2);
 
-		xSemaphoreTake(mutex_timer,portMAX_DELAY);
+			Display::display();
 
-		if(hour_t==23){
-			hour_t=0;
-		}else{
-			hour_t++;
-		}
+			break;
 
-		xSemaphoreGive(mutex_timer);
+		case timer_adjust_minutes:
 
-		display();
+			Display::clear();
 
-		break;
+			Display::setFont(arial_10);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 0, "Timer");
 
-	case timer_adjust_minutes:
+			Display::drawHorizontalLine(0, 12, 128);
 
-		xSemaphoreTake(mutex_timer,portMAX_DELAY);
+			Display::setFont(arial_24);
+			Display::setTextAlignment(center);
+			Display::drawString(52, 14, s);
 
-		if(minute_t==59){
-			minute_t=0;
-		}else{
-			minute_t++;
-		}
+			Display::setFont(arial_16);
+			Display::setTextAlignment(left);
+			Display::drawString(84, 20, s2);
 
-		xSemaphoreGive(mutex_timer);
+			Display::fillRect(57, 40, 24, 2);
 
-		display();
+			Display::display();
 
-		break;
+			break;
 
-	case timer_end:
-		state=timer;
-		end_blink=false;
-		cancel_vibration(timer_vibrator_task);
-		cancel_buzz(timer_buzzer_task);
-		display();
-		break;
+		case timer_end:
 
-	default:
+			Display::clear();
 
-		xSemaphoreTake(mutex_timer,portMAX_DELAY);
+			Display::setFont(arial_10);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 0, "Timer");
 
-		if(second_t==59){
-			second_t=0;
-		}else{
-			second_t++;
-		}
+			Display::drawHorizontalLine(0, 12, 128);
 
-		xSemaphoreGive(mutex_timer);
+			if (end_blink) {
+				Display::setFont(arial_24);
+				Display::setTextAlignment(center);
+				Display::drawString(52, 14, s);
 
-		display();
+				Display::setFont(arial_16);
+				Display::setTextAlignment(left);
+				Display::drawString(84, 20, s2);
+			}
 
-		break;
+			Display::display();
 
-	}
-	
-}
+			break;
 
-void Timer::but_up_right(){
+		default:
 
-	switch (state)
-	{
-	case chronograph:
+			Display::clear();
 
-		chronograph_running = !chronograph_running;
+			Display::setFont(arial_10);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 0, "Timer");
 
-		break;
+			Display::drawHorizontalLine(0, 12, 128);
 
-	case timer:
+			Display::setFont(arial_24);
+			Display::setTextAlignment(center);
+			Display::drawString(52, 14, s);
 
-		xSemaphoreTake(mutex_timer,portMAX_DELAY);
+			Display::setFont(arial_16);
+			Display::setTextAlignment(left);
+			Display::drawString(84, 20, s2);
 
-		if(minute_t!=0||hour_t!=0||second_t!=0){
-			timer_running = !timer_running;
-		}
+			Display::fillRect(84, 40, 24, 2);
 
-		xSemaphoreGive(mutex_timer);
+			Display::display();
 
-		break;
-	
-	case timer_end:
-	
-		state=timer;
-		end_blink=false;
-		cancel_vibration(timer_vibrator_task);
-		cancel_buzz(timer_buzzer_task);
-		display();
-		
-		break;
-	
-	default:
-		break;
-	}
-
-	
-}
-
-void Timer::but_down_left(){
-
-	switch (state)
-	{
-	case chronograph:
-
-		state = timer;
-
-		display();
-
-		break;
-
-	case timer:
-		break;
-
-	case timer_adjust_hours:
-
-		xSemaphoreTake(mutex_timer,portMAX_DELAY);
-
-		if(hour_t==0){
-			hour_t=23;
-		}else{
-			hour_t--;
-		}
-
-		xSemaphoreGive(mutex_timer);
-
-		display();
-
-		break;
-
-	case timer_adjust_minutes:
-
-		xSemaphoreTake(mutex_timer,portMAX_DELAY);
-
-		if(minute_t==0){
-			minute_t=59;
-		}else{
-			minute_t--;
-		}
-
-		xSemaphoreGive(mutex_timer);
-
-		display();
-
-		break;
-
-	case timer_end:
-		
-		state=timer;
-		end_blink=false;
-		cancel_vibration(timer_vibrator_task);
-		cancel_buzz(timer_buzzer_task);
-		display();
-		
-		break;
-	
-	default:
-
-		xSemaphoreTake(mutex_timer,portMAX_DELAY);
-
-		if(second_t==0){
-			second_t=59;
-		}else{
-			second_t--;
-		}
-
-		xSemaphoreGive(mutex_timer);
-
-		display();
-
-		break;
+			break;
 	}
 }
 
-void Timer::but_down_right(){
+void Timer::but_up_left() {
+	switch (state) {
+		case chronograph:
 
-	switch (state)
-	{
-	case chronograph:
+			App::exit_app();
 
-		if(!chronograph_running){
-			xSemaphoreTake(mutex_timer,portMAX_DELAY);
+			break;
 
-			hour_c=0;
-			minute_c=0;
-			second_c=0;
+		case timer:
+
+			state = chronograph;
+
+			display();
+
+			break;
+
+		case timer_adjust_hours:
+
+			xSemaphoreTake(mutex_timer, portMAX_DELAY);
+
+			if (hour_t == 23) {
+				hour_t = 0;
+			} else {
+				hour_t++;
+			}
 
 			xSemaphoreGive(mutex_timer);
 
 			display();
-		}
 
-		break;
+			break;
 
-	case timer:
+		case timer_adjust_minutes:
 
-		if(!timer_running){
-			state = timer_adjust_hours;
+			xSemaphoreTake(mutex_timer, portMAX_DELAY);
+
+			if (minute_t == 59) {
+				minute_t = 0;
+			} else {
+				minute_t++;
+			}
+
+			xSemaphoreGive(mutex_timer);
+
 			display();
-		}
 
-		break;
+			break;
 
-	case timer_adjust_hours:
+		case timer_end:
+			state = timer;
+			end_blink = false;
+			cancel_vibration(timer_vibrator_task);
+			cancel_buzz(timer_buzzer_task);
+			display();
+			break;
 
-		state = timer_adjust_minutes;
-		display();
+		default:
 
-		break;
+			xSemaphoreTake(mutex_timer, portMAX_DELAY);
 
-	case timer_adjust_minutes:
+			if (second_t == 59) {
+				second_t = 0;
+			} else {
+				second_t++;
+			}
 
-		state = timer_adjust_secounds;
-		display();
+			xSemaphoreGive(mutex_timer);
 
-		break;
+			display();
 
-	case timer_end:
-	
-		state=timer;
-		end_blink=false;
-		cancel_vibration(timer_vibrator_task);
-		cancel_buzz(timer_buzzer_task);
-		display();
-	
-		break;
-	
-	default:
-
-		state = timer;
-		display();
-
-		break;
+			break;
 	}
-
 }
 
-void Timer::timer_1s(){
+void Timer::but_up_right() {
+	switch (state) {
+		case chronograph:
 
-	xSemaphoreTake(mutex_timer,portMAX_DELAY);
+			chronograph_running = !chronograph_running;
 
-	if(chronograph_running){
+			break;
 
-		if(second_c==59){
-			second_c=0;
-			if (minute_c==59)
-			{
-				minute_c=0;
-				if(hour_c==23){
-					hour_c=0;
-				}else{
+		case timer:
+
+			xSemaphoreTake(mutex_timer, portMAX_DELAY);
+
+			if (minute_t != 0 || hour_t != 0 || second_t != 0) {
+				timer_running = !timer_running;
+			}
+
+			xSemaphoreGive(mutex_timer);
+
+			break;
+
+		case timer_end:
+
+			state = timer;
+			end_blink = false;
+			cancel_vibration(timer_vibrator_task);
+			cancel_buzz(timer_buzzer_task);
+			display();
+
+			break;
+
+		default:
+			break;
+	}
+}
+
+void Timer::but_down_left() {
+	switch (state) {
+		case chronograph:
+
+			state = timer;
+
+			display();
+
+			break;
+
+		case timer:
+			break;
+
+		case timer_adjust_hours:
+
+			xSemaphoreTake(mutex_timer, portMAX_DELAY);
+
+			if (hour_t == 0) {
+				hour_t = 23;
+			} else {
+				hour_t--;
+			}
+
+			xSemaphoreGive(mutex_timer);
+
+			display();
+
+			break;
+
+		case timer_adjust_minutes:
+
+			xSemaphoreTake(mutex_timer, portMAX_DELAY);
+
+			if (minute_t == 0) {
+				minute_t = 59;
+			} else {
+				minute_t--;
+			}
+
+			xSemaphoreGive(mutex_timer);
+
+			display();
+
+			break;
+
+		case timer_end:
+
+			state = timer;
+			end_blink = false;
+			cancel_vibration(timer_vibrator_task);
+			cancel_buzz(timer_buzzer_task);
+			display();
+
+			break;
+
+		default:
+
+			xSemaphoreTake(mutex_timer, portMAX_DELAY);
+
+			if (second_t == 0) {
+				second_t = 59;
+			} else {
+				second_t--;
+			}
+
+			xSemaphoreGive(mutex_timer);
+
+			display();
+
+			break;
+	}
+}
+
+void Timer::but_down_right() {
+	switch (state) {
+		case chronograph:
+
+			if (!chronograph_running) {
+				xSemaphoreTake(mutex_timer, portMAX_DELAY);
+
+				hour_c = 0;
+				minute_c = 0;
+				second_c = 0;
+
+				xSemaphoreGive(mutex_timer);
+
+				display();
+			}
+
+			break;
+
+		case timer:
+
+			if (!timer_running) {
+				state = timer_adjust_hours;
+				display();
+			}
+
+			break;
+
+		case timer_adjust_hours:
+
+			state = timer_adjust_minutes;
+			display();
+
+			break;
+
+		case timer_adjust_minutes:
+
+			state = timer_adjust_secounds;
+			display();
+
+			break;
+
+		case timer_end:
+
+			state = timer;
+			end_blink = false;
+			cancel_vibration(timer_vibrator_task);
+			cancel_buzz(timer_buzzer_task);
+			display();
+
+			break;
+
+		default:
+
+			state = timer;
+			display();
+
+			break;
+	}
+}
+
+void Timer::timer_1s() {
+	xSemaphoreTake(mutex_timer, portMAX_DELAY);
+
+	if (chronograph_running) {
+		if (second_c == 59) {
+			second_c = 0;
+			if (minute_c == 59) {
+				minute_c = 0;
+				if (hour_c == 23) {
+					hour_c = 0;
+				} else {
 					hour_c++;
 				}
-			}else{
+			} else {
 				minute_c++;
 			}
-		}else{
+		} else {
 			second_c++;
 		}
 	}
 
-	if(timer_running){
-
-		if(second_t==0){
-			second_t=59;
-			if (minute_t==0)
-			{
-				minute_t=59;
-				if(hour_t==0){
-					state=timer_end;
-					timer_running=false;
-					minute_t=0;
-					second_t=0;
+	if (timer_running) {
+		if (second_t == 0) {
+			second_t = 59;
+			if (minute_t == 0) {
+				minute_t = 59;
+				if (hour_t == 0) {
+					state = timer_end;
+					timer_running = false;
+					minute_t = 0;
+					second_t = 0;
 					xSemaphoreGive(mutex_timer);
 
-					vibrate(vibration_pattern_power,vibration_pattern_time,vibration_pattern_size, vibration_pattern_repeat, &timer_vibrator_task);
-					buzz(buzzer_pattern_power,buzzer_pattern_time,buzzer_pattern_frequency,buzzer_pattern_size,buzzer_pattern_repeat,&timer_buzzer_task);
+					vibrate(vibration_pattern_power, vibration_pattern_time,
+					        vibration_pattern_size, vibration_pattern_repeat,
+					        &timer_vibrator_task);
+					buzz(buzzer_pattern_power, buzzer_pattern_time,
+					     buzzer_pattern_frequency, buzzer_pattern_size,
+					     buzzer_pattern_repeat, &timer_buzzer_task);
 
-					if(App::curr_app()!=this){
+					if (App::curr_app() != this) {
 						App::run_app("Chronograph & Timer");
-					}else{
+					} else {
 						display();
 					}
 					return;
-				}else{
+				} else {
 					hour_t--;
 				}
-			}else{
+			} else {
 				minute_t--;
 			}
-		}else{
+		} else {
 			second_t--;
 		}
 	}
 
 	xSemaphoreGive(mutex_timer);
 
-	if(App::curr_app()==this){
-		switch (state)
-		{
-		case chronograph:
-		case timer:
+	if (App::curr_app() == this) {
+		switch (state) {
+			case chronograph:
+			case timer:
 
-			if(chronograph_running||timer_running)
+				if (chronograph_running || timer_running) display();
+
+				break;
+
+			case timer_end:
+				end_blink = !end_blink;
 				display();
+				break;
 
-			break;
-
-		case timer_end:
-			end_blink=!end_blink;
-			display();
-			break;
-		
-		default:
-			break;
+			default:
+				break;
 		}
 	}
 }
 
-Timer::Timer(String id_in, String name_in, const unsigned char* logo_in): App(id_in,name_in,logo_in) {
+Timer::Timer(String id_in, String name_in, const unsigned char* logo_in)
+	: App(id_in, name_in, logo_in) {
 	mutex_timer = xSemaphoreCreateMutex();
-	
-	state = chronograph;
-	hour_t=0;
-	minute_t=0;
-	second_t=0;
-	hour_c=0;
-	minute_c=0;
-	second_c=0;
-	chronograph_running=false;
-	timer_running=false;
 
-	end_blink=false;
+	state = chronograph;
+	hour_t = 0;
+	minute_t = 0;
+	second_t = 0;
+	hour_c = 0;
+	minute_c = 0;
+	second_c = 0;
+	chronograph_running = false;
+	timer_running = false;
+
+	end_blink = false;
 
 	this->attach_timer();
 }

@@ -1,146 +1,137 @@
 #include "weather.h"
+
 #include "logo_weather.h"
 
-void Weather::start(){
-
+void Weather::start() {
 	char buf[5] = "WEA\0";
 
 	send_bt(buf, 5);
 
-	if(state!=loading)
-		state=page1;
+	if (state != loading) state = page1;
 
 	display();
-
 }
 
-void Weather::display(){
-
+void Weather::display() {
 	unsigned char n;
 
-	xSemaphoreTake(mutex_weather,portMAX_DELAY);
+	xSemaphoreTake(mutex_weather, portMAX_DELAY);
 
-	switch (state)
-	{
-	case loading:
-		
-		Display::clear();
+	switch (state) {
+		case loading:
 
-		Display::setFont(arial_10);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 0, "Weather");
+			Display::clear();
 
-		Display::drawHorizontalLine(0,12,128);
+			Display::setFont(arial_10);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 0, "Weather");
 
-		Display::setFont(arial_16);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 25, "Loading");
+			Display::drawHorizontalLine(0, 12, 128);
 
-		Display::drawHorizontalLine(0,51,128);
+			Display::setFont(arial_16);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 25, "Loading");
 
-		Display::display();
+			Display::drawHorizontalLine(0, 51, 128);
 
-		break;
-	
-	default:
+			Display::display();
 
-		if(state==page1){
-			n = 0;
-		}else if(state==page2){
-			n = 2;
-		}else{
-			n = 4;
-		}
+			break;
 
-		timestamp t = show_time();
+		default:
 
-		Display::clear();
+			if (state == page1) {
+				n = 0;
+			} else if (state == page2) {
+				n = 2;
+			} else {
+				n = 4;
+			}
 
-		Display::setFont(arial_10);
-		Display::setTextAlignment(center);
+			timestamp t = show_time();
 
-		Display::drawString(64, 0, location);
+			Display::clear();
 
-		Display::drawHorizontalLine(0,12,128);
+			Display::setFont(arial_10);
+			Display::setTextAlignment(center);
 
-		Display::setTextAlignment(left);
-		Display::drawString(15, 15, week_day_name[(t.week_day+n-1)%7]);
-		Display::drawString(84, 15, week_day_name[(t.week_day+n)%7]);
+			Display::drawString(64, 0, location);
 
-		Display::drawXbm(0,35,LOGO_WEATHER_WIDTH,LOGO_WEATHER_HEIGHT,icon_converter(forecast[n].icon));
-		Display::drawXbm(68,35,LOGO_WEATHER_WIDTH,LOGO_WEATHER_HEIGHT,icon_converter(forecast[n+1].icon));
-		
-		Display::setFont(arial_10);
-		
-		Display::drawString(27, 30, forecast[n].max_temp + "C");
-		Display::drawString(95, 30, forecast[n+1].max_temp + "C");
+			Display::drawHorizontalLine(0, 12, 128);
 
-		Display::drawString(27, 41, forecast[n].min_temp + "C");
-		Display::drawString(95, 41, forecast[n+1].min_temp + "C");
+			Display::setTextAlignment(left);
+			Display::drawString(15, 15,
+			                    week_day_name[(t.week_day + n - 1) % 7]);
+			Display::drawString(84, 15, week_day_name[(t.week_day + n) % 7]);
 
-		Display::drawString(33, 52, forecast[n].rain + "%");
-		Display::drawString(101, 52, forecast[n+1].rain + "%");
+			Display::drawXbm(0, 35, LOGO_WEATHER_WIDTH, LOGO_WEATHER_HEIGHT,
+			                 icon_converter(forecast[n].icon));
+			Display::drawXbm(68, 35, LOGO_WEATHER_WIDTH, LOGO_WEATHER_HEIGHT,
+			                 icon_converter(forecast[n + 1].icon));
 
-		Display::display();
+			Display::setFont(arial_10);
 
-		break;
+			Display::drawString(27, 30, forecast[n].max_temp + "C");
+			Display::drawString(95, 30, forecast[n + 1].max_temp + "C");
+
+			Display::drawString(27, 41, forecast[n].min_temp + "C");
+			Display::drawString(95, 41, forecast[n + 1].min_temp + "C");
+
+			Display::drawString(33, 52, forecast[n].rain + "%");
+			Display::drawString(101, 52, forecast[n + 1].rain + "%");
+
+			Display::display();
+
+			break;
 	}
 
 	xSemaphoreGive(mutex_weather);
-	
 }
 
-void Weather::but_down_left(){
+void Weather::but_down_left() {
+	switch (state) {
+		case page2:
+			state = page1;
+			display();
+			break;
 
-	switch (state)
-	{
-	case page2:
-		state=page1;
-		display();
-		break;
-	
-	case page3:
-		state=page2;
-		display();
-		break;
-	
-	default:
-		break;
+		case page3:
+			state = page2;
+			display();
+			break;
+
+		default:
+			break;
 	}
-
 }
 
-void Weather::but_down_right(){
+void Weather::but_down_right() {
+	switch (state) {
+		case page1:
+			state = page2;
+			display();
+			break;
 
-	switch (state)
-	{
-	case page1:
-		state=page2;
-		display();
-		break;
+		case page2:
+			state = page3;
+			display();
+			break;
 
-	case page2:
-		state=page3;
-		display();
-		break;
-	
-	default:
-		break;
+		default:
+			break;
 	}
-
 }
 
-void Weather::bt_receive(char* message){
-
-	char * str, * context, delim[2];
+void Weather::bt_receive(char* message) {
+	char *str, *context, delim[2];
 
 	delim[0] = (char)0x03;
 	delim[1] = '\0';
 
-	xSemaphoreTake(mutex_weather,portMAX_DELAY);
+	xSemaphoreTake(mutex_weather, portMAX_DELAY);
 
-	str = strtok_r(message,delim,&context);
-	if(str==NULL){
+	str = strtok_r(message, delim, &context);
+	if (str == NULL) {
 		xSemaphoreGive(mutex_weather);
 		return;
 	}
@@ -149,73 +140,70 @@ void Weather::bt_receive(char* message){
 
 	location = String(str);
 
-	for(int i=0; i<6;i++){
-
-		str = strtok_r(NULL,delim,&context);
-		if(str==NULL)
-			break;
+	for (int i = 0; i < 6; i++) {
+		str = strtok_r(NULL, delim, &context);
+		if (str == NULL) break;
 		Serial.println(str);
-		forecast[i].icon=atoi(str);
+		forecast[i].icon = atoi(str);
 
-		str = strtok_r(NULL,delim,&context);
-		if(str==NULL)
-			break;
+		str = strtok_r(NULL, delim, &context);
+		if (str == NULL) break;
 		Serial.println(str);
-		forecast[i].max_temp=String(str);
-		
-		str = strtok_r(NULL,delim,&context);
-		if(str==NULL)
-			break;
-		Serial.println(str);
-		forecast[i].min_temp=String(str);
+		forecast[i].max_temp = String(str);
 
-		if(i!=5)
-			str = strtok_r(NULL,delim,&context);
+		str = strtok_r(NULL, delim, &context);
+		if (str == NULL) break;
+		Serial.println(str);
+		forecast[i].min_temp = String(str);
+
+		if (i != 5)
+			str = strtok_r(NULL, delim, &context);
 		else
-			str = strtok_r(NULL,"\0",&context);
-		
-		if(str==NULL)
-			break;
-		Serial.println(str);
-		forecast[i].rain=String(str);
+			str = strtok_r(NULL, "\0", &context);
 
+		if (str == NULL) break;
+		Serial.println(str);
+		forecast[i].rain = String(str);
 	}
 
 	xSemaphoreGive(mutex_weather);
 
-	if(state==loading)
-		state=page1;
-	
-	if(App::curr_app()==this)
-		display();	
+	if (state == loading) state = page1;
+
+	if (App::curr_app() == this) display();
 }
 
-const unsigned char* Weather::icon_converter(int icon){
-	if(icon==800){
+const unsigned char* Weather::icon_converter(int icon) {
+	if (icon == 800) {
 		return sun_icon;
-	}else if(icon==801||icon==802||icon==803){
+	} else if (icon == 801 || icon == 802 || icon == 803) {
 		return clouds1_icon;
-	}else if(icon==804){
+	} else if (icon == 804) {
 		return clouds2_icon;
-	}else if(icon==300||icon==301||icon==302||icon==500){
+	} else if (icon == 300 || icon == 301 || icon == 302 || icon == 500) {
 		return rain1_icon;
-	}else if(icon==501||icon==502||icon==511||icon==520||icon==521||icon==522){
+	} else if (icon == 501 || icon == 502 || icon == 511 || icon == 520 ||
+	           icon == 521 || icon == 522) {
 		return rain2_icon;
-	}else if(icon==600||icon==601||icon==602||icon==610||icon==611||icon==612||icon==621||icon==622||icon==623){
+	} else if (icon == 600 || icon == 601 || icon == 602 || icon == 610 ||
+	           icon == 611 || icon == 612 || icon == 621 || icon == 622 ||
+	           icon == 623) {
 		return snow_icon;
-	}else if(icon==700||icon==711||icon==721||icon==731||icon==741||icon==751){
+	} else if (icon == 700 || icon == 711 || icon == 721 || icon == 731 ||
+	           icon == 741 || icon == 751) {
 		return fog_icon;
-	}else if(icon==200||icon==201||icon==202||icon==230||icon==231||icon==232||icon==233){
+	} else if (icon == 200 || icon == 201 || icon == 202 || icon == 230 ||
+	           icon == 231 || icon == 232 || icon == 233) {
 		return thunder_icon;
-	}else{
+	} else {
 		return rain2_icon;
 	}
 }
 
-Weather::Weather(String id_in, String name_in, const unsigned char* logo_in): App(id_in,name_in,logo_in) {
-		mutex_weather = xSemaphoreCreateMutex();
+Weather::Weather(String id_in, String name_in, const unsigned char* logo_in)
+	: App(id_in, name_in, logo_in) {
+	mutex_weather = xSemaphoreCreateMutex();
 
-		state = loading;
-		available = false;
-
+	state = loading;
+	available = false;
 }

@@ -11,64 +11,64 @@ bool enable_v;
 
 void vibrate_task(void* par_in);
 
-void init_vibrator(){
-	ledcSetup(PWM_CHANNEL,PWM_FREQ,PWM_RESOLUTION);
-	ledcAttachPin(PWM_GPIO,PWM_CHANNEL);
+void init_vibrator() {
+	ledcSetup(PWM_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
+	ledcAttachPin(PWM_GPIO, PWM_CHANNEL);
 	mutex_vibrator = xSemaphoreCreateMutex();
-	enable_v=true;
+	enable_v = true;
 }
 
-void vibrate(vibrate_pattern pattern){
+void vibrate(vibrate_pattern pattern) {
 	vibrate(pattern.power, pattern.time, pattern.size, pattern.repeat);
 }
 
-void vibrate(unsigned char * pattern_power, unsigned int * pattern_time, unsigned char size){
+void vibrate(unsigned char* pattern_power, unsigned int* pattern_time,
+             unsigned char size) {
 	vibrate(pattern_power, pattern_time, size, 1);
 }
 
-void vibrate(unsigned char * pattern_power, unsigned int * pattern_time, unsigned char size, unsigned char repeat){
-
+void vibrate(unsigned char* pattern_power, unsigned int* pattern_time,
+             unsigned char size, unsigned char repeat) {
 	TaskHandle_t task_h;
 
 	vibrate(pattern_power, pattern_time, size, repeat, &task_h);
 }
 
-void vibrate(unsigned char * pattern_power, unsigned int * pattern_time, unsigned char size, unsigned char repeat, TaskHandle_t * task_h){
-	
-	if(!enable_v)
-		return;
+void vibrate(unsigned char* pattern_power, unsigned int* pattern_time,
+             unsigned char size, unsigned char repeat, TaskHandle_t* task_h) {
+	if (!enable_v) return;
 
-	vibrate_pattern * pattern =(vibrate_pattern*) malloc(sizeof(vibrate_pattern));
-	pattern->power = (unsigned char*) malloc(sizeof(unsigned char)*size);
-	pattern->time = (unsigned int*) malloc(sizeof(int)*size);
+	vibrate_pattern* pattern =
+		(vibrate_pattern*)malloc(sizeof(vibrate_pattern));
+	pattern->power = (unsigned char*)malloc(sizeof(unsigned char) * size);
+	pattern->time = (unsigned int*)malloc(sizeof(int) * size);
 
-	memcpy(pattern->power,pattern_power, size);
-	memcpy(pattern->time,pattern_time, size*sizeof(int));
+	memcpy(pattern->power, pattern_power, size);
+	memcpy(pattern->time, pattern_time, size * sizeof(int));
 	pattern->size = size;
 	pattern->repeat = repeat;
 
-	xTaskCreate(vibrate_task,"vibrate task",8192,pattern,1,task_h);
+	xTaskCreate(vibrate_task, "vibrate task", 8192, pattern, 1, task_h);
 }
 
-int enable_vibrator(int status){
-	if(status==0){
-		enable_v=false;
-	}else if(status==1){
-		enable_v=true;
+int enable_vibrator(int status) {
+	if (status == 0) {
+		enable_v = false;
+	} else if (status == 1) {
+		enable_v = true;
 	}
 
 	return enable_v;
 }
 
-void vibrate_task(void* par_in){
+void vibrate_task(void* par_in) {
+	vibrate_pattern* pattern = (vibrate_pattern*)par_in;
 
-	vibrate_pattern * pattern = (vibrate_pattern*) par_in;
-
-	xSemaphoreTake(mutex_vibrator,portMAX_DELAY);
-	for(int j=0; j<pattern->repeat; j++){
-		for(int i=0; i<pattern->size; i++){
-			if(ulTaskNotifyTake(pdTRUE,0)==1){
-				ledcWrite(PWM_CHANNEL,0);
+	xSemaphoreTake(mutex_vibrator, portMAX_DELAY);
+	for (int j = 0; j < pattern->repeat; j++) {
+		for (int i = 0; i < pattern->size; i++) {
+			if (ulTaskNotifyTake(pdTRUE, 0) == 1) {
+				ledcWrite(PWM_CHANNEL, 0);
 				xSemaphoreGive(mutex_vibrator);
 
 				free(pattern->power);
@@ -77,11 +77,11 @@ void vibrate_task(void* par_in){
 
 				vTaskDelete(NULL);
 			}
-			ledcWrite(PWM_CHANNEL,pattern->power[i]);
+			ledcWrite(PWM_CHANNEL, pattern->power[i]);
 			delay(pattern->time[i]);
 		}
 	}
-	ledcWrite(PWM_CHANNEL,0);
+	ledcWrite(PWM_CHANNEL, 0);
 
 	xSemaphoreGive(mutex_vibrator);
 
@@ -92,8 +92,7 @@ void vibrate_task(void* par_in){
 	vTaskDelete(NULL);
 }
 
-void cancel_vibration(TaskHandle_t task){
-	if(task==NULL)
-		return;
+void cancel_vibration(TaskHandle_t task) {
+	if (task == NULL) return;
 	xTaskNotifyGive(task);
 }

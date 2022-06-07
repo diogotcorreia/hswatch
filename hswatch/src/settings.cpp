@@ -1,230 +1,214 @@
 #include "settings.h"
 
-void Settings::start(){
+void Settings::start() {
+	state = led;
 
-	state = led;	
-	
 	display();
-
 }
 
-void Settings::display(){
-
+void Settings::display() {
 	int led_status, buzzer_status, vibrator_status;
 
-	switch (state)
-	{
-	case led:
-		
-		Display::clear();
+	switch (state) {
+		case led:
 
-		Display::setFont(arial_10);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 0, "Settings");
+			Display::clear();
 
-		Display::drawHorizontalLine(0,12,128);
+			Display::setFont(arial_10);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 0, "Settings");
 
-		Display::setFont(arial_16);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 20, "Led Enable:");
+			Display::drawHorizontalLine(0, 12, 128);
 
-		led_status = enable_led();
+			Display::setFont(arial_16);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 20, "Led Enable:");
 
-		if(led_status==DISABLE_LED){
-			Display::drawString(64, 45, "Off");
-		}else if(led_status==ENABLE_HIGH_PRIORITY_LED){
-			Display::drawString(64, 45, "Only for apps");
-		}else{
-			Display::drawString(64, 45, "On");
-		}
+			led_status = enable_led();
 
-		Display::display();
+			if (led_status == DISABLE_LED) {
+				Display::drawString(64, 45, "Off");
+			} else if (led_status == ENABLE_HIGH_PRIORITY_LED) {
+				Display::drawString(64, 45, "Only for apps");
+			} else {
+				Display::drawString(64, 45, "On");
+			}
 
-		break;
+			Display::display();
 
-	case buzzer:
+			break;
 
-		Display::clear();
+		case buzzer:
 
-		Display::setFont(arial_10);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 0, "Settings");
+			Display::clear();
 
-		Display::drawHorizontalLine(0,12,128);
+			Display::setFont(arial_10);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 0, "Settings");
 
-		Display::setFont(arial_16);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 20, "Buzzer Enable:");
-		
-		buzzer_status = enable_buzzer();
+			Display::drawHorizontalLine(0, 12, 128);
 
-		if(buzzer_status==DISABLE_BUZZER){
-			Display::drawString(64, 45, "Off");
-		}else{
-			Display::drawString(64, 45, "On");
-		}
+			Display::setFont(arial_16);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 20, "Buzzer Enable:");
 
-		Display::display();
+			buzzer_status = enable_buzzer();
 
-		break;
+			if (buzzer_status == DISABLE_BUZZER) {
+				Display::drawString(64, 45, "Off");
+			} else {
+				Display::drawString(64, 45, "On");
+			}
 
-	case vibrator:
+			Display::display();
 
-		Display::clear();
+			break;
 
-		Display::setFont(arial_10);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 0, "Settings");
+		case vibrator:
 
-		Display::drawHorizontalLine(0,12,128);
+			Display::clear();
 
-		Display::setFont(arial_16);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 20, "Vibrator Enable:");
-		
-		vibrator_status = enable_vibrator();
+			Display::setFont(arial_10);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 0, "Settings");
 
-		if(vibrator_status==DISABLE_VIBRATOR){
-			Display::drawString(64, 45, "Off");
-		}else{
-			Display::drawString(64, 45, "On");
-		}
+			Display::drawHorizontalLine(0, 12, 128);
 
-		Display::display();
+			Display::setFont(arial_16);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 20, "Vibrator Enable:");
 
-		break;
+			vibrator_status = enable_vibrator();
 
-	default:
+			if (vibrator_status == DISABLE_VIBRATOR) {
+				Display::drawString(64, 45, "Off");
+			} else {
+				Display::drawString(64, 45, "On");
+			}
 
-		Display::clear();
+			Display::display();
 
-		Display::setFont(arial_10);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 0, "Settings");
+			break;
 
-		Display::drawHorizontalLine(0,12,128);
+		default:
 
-		Display::setFont(arial_16);
-		Display::setTextAlignment(center);
-		Display::drawString(64, 20, "About");
+			Display::clear();
 
-		Display::setFont(arial_10);
-		Display::drawString(64, 45, "click OK");
+			Display::setFont(arial_10);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 0, "Settings");
 
-		Display::display();
+			Display::drawHorizontalLine(0, 12, 128);
 
-		break;
+			Display::setFont(arial_16);
+			Display::setTextAlignment(center);
+			Display::drawString(64, 20, "About");
+
+			Display::setFont(arial_10);
+			Display::drawString(64, 45, "click OK");
+
+			Display::display();
+
+			break;
 	}
-	
 }
 
-void Settings::but_down_left(){
+void Settings::but_down_left() {
+	switch (state) {
+		case led:
+			state = buzzer;
+			display();
+			break;
 
-	switch (state)
-	{
-	case led:
-		state=buzzer;
-		display();
-		break;
-	
-	case buzzer:
-		state=vibrator;
-		display();
-		break;
+		case buzzer:
+			state = vibrator;
+			display();
+			break;
 
-	case vibrator:
-		state=about;
-		display();
-		break;
-	
-	default:
-		break;
+		case vibrator:
+			state = about;
+			display();
+			break;
+
+		default:
+			break;
 	}
-
 }
 
-void Settings::but_up_left(){
+void Settings::but_up_left() {
+	switch (state) {
+		case led:
+			exit_app();
+			break;
 
-	switch (state)
-	{
-	case led:
-		exit_app();
-		break;
-	
-	case buzzer:
-		state=led;
-		display();
-		break;
-	
-	case vibrator:
-		state=buzzer;
-		display();
-		break;
-	
-	default:
-		state=vibrator;
-		display();
-		break;
+		case buzzer:
+			state = led;
+			display();
+			break;
+
+		case vibrator:
+			state = buzzer;
+			display();
+			break;
+
+		default:
+			state = vibrator;
+			display();
+			break;
 	}
-
 }
 
-void Settings::but_up_right(){
-
+void Settings::but_up_right() {
 	int led_status, buzzer_status, vibrator_status;
 
-	switch (state)
-	{
-	case led:
+	switch (state) {
+		case led:
 
-		led_status = enable_led();
-		
-		if(led_status==DISABLE_LED){
-			enable_led(ENABLE_HIGH_PRIORITY_LED);
-		}else if(led_status==ENABLE_HIGH_PRIORITY_LED){
-			enable_led(ENABLE_LED);
-		}else{
-			enable_led(DISABLE_LED);
-		}
+			led_status = enable_led();
 
-		display();
-		break;
-	
-	case buzzer:
-		
-		buzzer_status = enable_buzzer();
-		
-		if(buzzer_status==DISABLE_BUZZER){
-			enable_buzzer(ENABLE_BUZZER);
-		}else{
-			enable_buzzer(DISABLE_BUZZER);
-		}
+			if (led_status == DISABLE_LED) {
+				enable_led(ENABLE_HIGH_PRIORITY_LED);
+			} else if (led_status == ENABLE_HIGH_PRIORITY_LED) {
+				enable_led(ENABLE_LED);
+			} else {
+				enable_led(DISABLE_LED);
+			}
 
-		display();
-		break;
+			display();
+			break;
 
-	case vibrator:
-		
-		vibrator_status = enable_vibrator();
-		
-		if(vibrator_status==DISABLE_VIBRATOR){
-			enable_vibrator(ENABLE_VIBRATOR);
-		}else{
-			enable_vibrator(DISABLE_VIBRATOR);
-		}
+		case buzzer:
 
-		display();
-		break;
-	
-	default:
-		
-		run_app("About");
-		break;
+			buzzer_status = enable_buzzer();
+
+			if (buzzer_status == DISABLE_BUZZER) {
+				enable_buzzer(ENABLE_BUZZER);
+			} else {
+				enable_buzzer(DISABLE_BUZZER);
+			}
+
+			display();
+			break;
+
+		case vibrator:
+
+			vibrator_status = enable_vibrator();
+
+			if (vibrator_status == DISABLE_VIBRATOR) {
+				enable_vibrator(ENABLE_VIBRATOR);
+			} else {
+				enable_vibrator(DISABLE_VIBRATOR);
+			}
+
+			display();
+			break;
+
+		default:
+
+			run_app("About");
+			break;
 	}
-
 }
 
-Settings::Settings(String id_in, String name_in, const unsigned char* logo_in): App(id_in,name_in,logo_in) {
-		
-
-}
+Settings::Settings(String id_in, String name_in, const unsigned char* logo_in)
+	: App(id_in, name_in, logo_in) {}

@@ -11,94 +11,95 @@ bool enable_b;
 
 void buzz_task(void* par_in);
 
-void init_buzzer(){
-	ledcSetup(PWM_CHANNEL,PWM_FREQ,PWM_RESOLUTION);
-	ledcAttachPin(PWM_GPIO,PWM_CHANNEL);
+void init_buzzer() {
+	ledcSetup(PWM_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
+	ledcAttachPin(PWM_GPIO, PWM_CHANNEL);
 	mutex_buzzer = xSemaphoreCreateMutex();
-	enable_b=true;
+	enable_b = true;
 }
 
-void buzz(buzzer_pattern pattern){
-	buzz(pattern.power, pattern.time, pattern.frequency, pattern.size, pattern.repeat);
+void buzz(buzzer_pattern pattern) {
+	buzz(pattern.power, pattern.time, pattern.frequency, pattern.size,
+	     pattern.repeat);
 }
 
-void buzz(unsigned char * pattern_power, unsigned int * pattern_time, unsigned int * pattern_frequency, unsigned char size){
+void buzz(unsigned char* pattern_power, unsigned int* pattern_time,
+          unsigned int* pattern_frequency, unsigned char size) {
 	buzz(pattern_power, pattern_time, pattern_frequency, size, 1);
 }
 
-void buzz(unsigned char * pattern_power, unsigned int * pattern_time, unsigned int * pattern_frequency, unsigned char size, unsigned char repeat){
-
+void buzz(unsigned char* pattern_power, unsigned int* pattern_time,
+          unsigned int* pattern_frequency, unsigned char size,
+          unsigned char repeat) {
 	TaskHandle_t task_h;
 
 	buzz(pattern_power, pattern_time, pattern_frequency, size, repeat, &task_h);
 }
 
-void buzz(unsigned char * pattern_power, unsigned int * pattern_time, unsigned int * pattern_frequency, unsigned char size, unsigned char repeat, TaskHandle_t * task_h){
+void buzz(unsigned char* pattern_power, unsigned int* pattern_time,
+          unsigned int* pattern_frequency, unsigned char size,
+          unsigned char repeat, TaskHandle_t* task_h) {
+	if (!enable_b) return;
 
-	if(!enable_b)
-		return;
-	
-	buzzer_pattern * pattern =(buzzer_pattern*) malloc(sizeof(buzzer_pattern));
-	pattern->power = (unsigned char*) malloc(sizeof(unsigned char)*size);
-	pattern->time = (unsigned int*) malloc(sizeof(int)*size);
-    pattern->frequency = (unsigned int*) malloc(sizeof(int)*size);
+	buzzer_pattern* pattern = (buzzer_pattern*)malloc(sizeof(buzzer_pattern));
+	pattern->power = (unsigned char*)malloc(sizeof(unsigned char) * size);
+	pattern->time = (unsigned int*)malloc(sizeof(int) * size);
+	pattern->frequency = (unsigned int*)malloc(sizeof(int) * size);
 
-	memcpy(pattern->power,pattern_power, size);
-	memcpy(pattern->time,pattern_time, size*sizeof(int));
-    memcpy(pattern->frequency,pattern_frequency, size*sizeof(int));
+	memcpy(pattern->power, pattern_power, size);
+	memcpy(pattern->time, pattern_time, size * sizeof(int));
+	memcpy(pattern->frequency, pattern_frequency, size * sizeof(int));
 	pattern->size = size;
 	pattern->repeat = repeat;
 
-	xTaskCreate(buzz_task,"buzz task",8192,pattern,1,task_h);
+	xTaskCreate(buzz_task, "buzz task", 8192, pattern, 1, task_h);
 }
 
-int enable_buzzer(int status){
-	if(status==0){
-		enable_b=false;
-	}else if(status==1){
-		enable_b=true;
+int enable_buzzer(int status) {
+	if (status == 0) {
+		enable_b = false;
+	} else if (status == 1) {
+		enable_b = true;
 	}
 
 	return enable_b;
 }
 
-void buzz_task(void* par_in){
+void buzz_task(void* par_in) {
+	buzzer_pattern* pattern = (buzzer_pattern*)par_in;
 
-	buzzer_pattern * pattern = (buzzer_pattern*) par_in;
-
-	xSemaphoreTake(mutex_buzzer,portMAX_DELAY);
-	for(int j=0; j<pattern->repeat; j++){
-		for(int i=0; i<pattern->size; i++){
-			if(ulTaskNotifyTake(pdTRUE,0)==1){
-				ledcWrite(PWM_CHANNEL,0);
+	xSemaphoreTake(mutex_buzzer, portMAX_DELAY);
+	for (int j = 0; j < pattern->repeat; j++) {
+		for (int i = 0; i < pattern->size; i++) {
+			if (ulTaskNotifyTake(pdTRUE, 0) == 1) {
+				ledcWrite(PWM_CHANNEL, 0);
 				xSemaphoreGive(mutex_buzzer);
 
 				free(pattern->power);
 				free(pattern->time);
-                free(pattern->frequency);
+				free(pattern->frequency);
 				free(pattern);
 
 				vTaskDelete(NULL);
 			}
-            ledcWriteTone(PWM_CHANNEL, pattern->frequency[i]);
-			ledcWrite(PWM_CHANNEL,pattern->power[i]);
+			ledcWriteTone(PWM_CHANNEL, pattern->frequency[i]);
+			ledcWrite(PWM_CHANNEL, pattern->power[i]);
 			delay(pattern->time[i]);
 		}
 	}
-	ledcWrite(PWM_CHANNEL,0);
+	ledcWrite(PWM_CHANNEL, 0);
 
 	xSemaphoreGive(mutex_buzzer);
 
 	free(pattern->power);
 	free(pattern->time);
-    free(pattern->frequency);
+	free(pattern->frequency);
 	free(pattern);
 
 	vTaskDelete(NULL);
 }
 
-void cancel_buzz(TaskHandle_t task){
-	if(task==NULL)
-		return;
+void cancel_buzz(TaskHandle_t task) {
+	if (task == NULL) return;
 	xTaskNotifyGive(task);
 }

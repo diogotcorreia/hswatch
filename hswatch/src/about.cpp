@@ -1,15 +1,11 @@
 #include "about.h"
 
-void About::start(){
-
+void About::start() {
 	rainbow_led(&led_task);
 	display();
-
 }
 
-void About::display(){
-
-
+void About::display() {
 	Display::clear();
 
 	Display::setFont(arial_10);
@@ -20,14 +16,12 @@ void About::display(){
 	Display::drawString(64, 50, "@ HackerSchool.io");
 
 	Display::display();
-	
 }
 
-void About::but_up_left(){
-
+void About::but_up_left() {
 	cancel_blink_led(led_task);
 	exit_app();
-
 }
 
-About::About(String id_in, String name_in, const unsigned char* logo_in): App(id_in,name_in,logo_in) {}
+About::About(String id_in, String name_in, const unsigned char* logo_in)
+	: App(id_in, name_in, logo_in) {}

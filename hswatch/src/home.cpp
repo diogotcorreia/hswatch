@@ -1,124 +1,125 @@
 #include "home.h"
+
 #include "display.h"
 #include "logo_notification.h"
 
-const unsigned char n_days_in_month[12] = {31,28,31,30,31,30,31,31,30,31,30,31};
+const unsigned char n_days_in_month[12] = {31, 28, 31, 30, 31, 30,
+                                           31, 31, 30, 31, 30, 31};
 
-int frame_n=0;
+int frame_n = 0;
 
-void Home::start(){
-
+void Home::start() {
 	display();
 }
 
-void Home::display(){
+void Home::display() {
+	String s = "", s2 = "", s3 = "", s4 = "";
+	bool en_alarm = false;
+	int h_top = 0;
 
-	String s="", s2="", s3="", s4="";
-	bool en_alarm=false;
-	int h_top=0;
-	
 	int bat_level = status_battery();
 
-	if(alarm1_en){
-		s4=s4+"1 ";
-		en_alarm=true;
+	if (alarm1_en) {
+		s4 = s4 + "1 ";
+		en_alarm = true;
 	}
-	if(alarm2_en){
-		s4=s4+"2 ";
-		en_alarm=true;
+	if (alarm2_en) {
+		s4 = s4 + "2 ";
+		en_alarm = true;
 	}
-	if(alarm3_en){
-		s4=s4+"3 ";
-		en_alarm=true;
-	}
-	
-	xSemaphoreTake(mutex_home,portMAX_DELAY);
-
-	if(hour<10){
-		s=s+"0";
-		s=s+String(hour);
-	}else{
-		s=s+String(hour);
+	if (alarm3_en) {
+		s4 = s4 + "3 ";
+		en_alarm = true;
 	}
 
-	s=s+":";
+	xSemaphoreTake(mutex_home, portMAX_DELAY);
 
-	if(minute<10){
-		s=s+"0";
-		s=s+String(minute);
-	}else{
-		s=s+String(minute);
+	if (hour < 10) {
+		s = s + "0";
+		s = s + String(hour);
+	} else {
+		s = s + String(hour);
 	}
 
-	s2=":";
+	s = s + ":";
 
-	if(second<10){
-		s2=s2+"0";
-		s2=s2+String(second);
-	}else{
-		s2=s2+String(second);
+	if (minute < 10) {
+		s = s + "0";
+		s = s + String(minute);
+	} else {
+		s = s + String(minute);
 	}
 
-	s3=s3+String(week_day_name[week_day-1][0])+String(week_day_name[week_day-1][1])+String(week_day_name[week_day-1][2]);
-	s3=s3+"  ";
+	s2 = ":";
 
-	if(day<10){
-		s3=s3+"0";
-		s3=s3+String(day);
-	}else{
-		s3=s3+String(day);
+	if (second < 10) {
+		s2 = s2 + "0";
+		s2 = s2 + String(second);
+	} else {
+		s2 = s2 + String(second);
 	}
 
-	s3=s3+"/";
+	s3 = s3 + String(week_day_name[week_day - 1][0]) +
+	     String(week_day_name[week_day - 1][1]) +
+	     String(week_day_name[week_day - 1][2]);
+	s3 = s3 + "  ";
 
-	if(month<10){
-		s3=s3+"0";
-		s3=s3+String(month);
-	}else{
-		s3=s3+String(month);
+	if (day < 10) {
+		s3 = s3 + "0";
+		s3 = s3 + String(day);
+	} else {
+		s3 = s3 + String(day);
 	}
 
-	s3=s3+"/"+String(year);
+	s3 = s3 + "/";
+
+	if (month < 10) {
+		s3 = s3 + "0";
+		s3 = s3 + String(month);
+	} else {
+		s3 = s3 + String(month);
+	}
+
+	s3 = s3 + "/" + String(year);
 
 	xSemaphoreGive(mutex_home);
 
-	if(frame_n==1&&not_icon.empty()){
-		frame_n=0;
+	if (frame_n == 1 && not_icon.empty()) {
+		frame_n = 0;
 	}
 
-	if(frame_n==0){
+	if (frame_n == 0) {
 		Display::clear();
 
-		if(connected_bluetooth()){
-			Display::drawXbm(0,0,BT_ICON_W,BT_ICON_H,bt_logo);
-			h_top=11;
+		if (connected_bluetooth()) {
+			Display::drawXbm(0, 0, BT_ICON_W, BT_ICON_H, bt_logo);
+			h_top = 11;
 		}
 
-		if(en_alarm){
+		if (en_alarm) {
 			Display::setFont(arial_10);
 			Display::setTextAlignment(left);
-			Display::drawString(h_top+10, 0, s4);
-			Display::drawXbm(h_top,0,ALARM_ICON_W,ALARM_ICON_H,alarm_icon);
-
+			Display::drawString(h_top + 10, 0, s4);
+			Display::drawXbm(h_top, 0, ALARM_ICON_W, ALARM_ICON_H, alarm_icon);
 		}
 
-		if(bat_level==0){
-			Display::drawXbm(109,0,BATTERY_ICON_W,BATTERY_ICON_H,bat_0);
-		}else if(bat_level==1){
-			Display::drawXbm(109,0,BATTERY_ICON_W,BATTERY_ICON_H,bat_1);
-		}else if(bat_level==2){
-			Display::drawXbm(109,0,BATTERY_ICON_W,BATTERY_ICON_H,bat_2);
-		}else{
-			Display::drawXbm(109,0,BATTERY_ICON_W,BATTERY_ICON_H,bat_3);
+		if (bat_level == 0) {
+			Display::drawXbm(109, 0, BATTERY_ICON_W, BATTERY_ICON_H, bat_0);
+		} else if (bat_level == 1) {
+			Display::drawXbm(109, 0, BATTERY_ICON_W, BATTERY_ICON_H, bat_1);
+		} else if (bat_level == 2) {
+			Display::drawXbm(109, 0, BATTERY_ICON_W, BATTERY_ICON_H, bat_2);
+		} else {
+			Display::drawXbm(109, 0, BATTERY_ICON_W, BATTERY_ICON_H, bat_3);
 		}
 
-		Display::drawHorizontalLine(0,12,128);
+		Display::drawHorizontalLine(0, 12, 128);
 
 		Display::setFont(arial_24);
 		Display::setTextAlignment(center);
 
 		Display::drawString(52, 14, s);
-		
+
 		Display::setFont(arial_16);
 		Display::setTextAlignment(left);
 		Display::drawString(84, 20, s2);
@@ -127,293 +128,284 @@ void Home::display(){
 		Display::setTextAlignment(center);
 		Display::drawString(64, 38, s3);
 
-		Display::drawHorizontalLine(0,51,128);
+		Display::drawHorizontalLine(0, 51, 128);
 
-		if(!not_icon.empty()){
+		if (!not_icon.empty()) {
 			Display::setFont(arial_24);
 			Display::setTextAlignment(center);
 			Display::drawString(64, 38, "...");
 		}
 
 		Display::display();
-	}else{
+	} else {
 		Display::clear();
 
-		if(connected_bluetooth()){
-			Display::drawXbm(0,0,BT_ICON_W,BT_ICON_H,bt_logo);
-			h_top=11;
+		if (connected_bluetooth()) {
+			Display::drawXbm(0, 0, BT_ICON_W, BT_ICON_H, bt_logo);
+			h_top = 11;
 		}
 
-		if(en_alarm){
+		if (en_alarm) {
 			Display::setFont(arial_10);
 			Display::setTextAlignment(left);
-			Display::drawString(h_top+10, 0, s4);
-			Display::drawXbm(h_top,0,ALARM_ICON_W,ALARM_ICON_H,alarm_icon);
-
+			Display::drawString(h_top + 10, 0, s4);
+			Display::drawXbm(h_top, 0, ALARM_ICON_W, ALARM_ICON_H, alarm_icon);
 		}
 
-		if(bat_level==0){
-			Display::drawXbm(109,0,BATTERY_ICON_W,BATTERY_ICON_H,bat_0);
-		}else if(bat_level==1){
-			Display::drawXbm(109,0,BATTERY_ICON_W,BATTERY_ICON_H,bat_1);
-		}else if(bat_level==2){
-			Display::drawXbm(109,0,BATTERY_ICON_W,BATTERY_ICON_H,bat_2);
-		}else{
-			Display::drawXbm(109,0,BATTERY_ICON_W,BATTERY_ICON_H,bat_3);
+		if (bat_level == 0) {
+			Display::drawXbm(109, 0, BATTERY_ICON_W, BATTERY_ICON_H, bat_0);
+		} else if (bat_level == 1) {
+			Display::drawXbm(109, 0, BATTERY_ICON_W, BATTERY_ICON_H, bat_1);
+		} else if (bat_level == 2) {
+			Display::drawXbm(109, 0, BATTERY_ICON_W, BATTERY_ICON_H, bat_2);
+		} else {
+			Display::drawXbm(109, 0, BATTERY_ICON_W, BATTERY_ICON_H, bat_3);
 		}
 
-		Display::drawHorizontalLine(0,12,128);
+		Display::drawHorizontalLine(0, 12, 128);
 
 		Display::setFont(arial_24);
 		Display::setTextAlignment(center);
 
 		Display::drawString(52, 14, s);
-		
+
 		Display::setFont(arial_16);
 		Display::setTextAlignment(left);
 		Display::drawString(84, 20, s2);
 
-		Display::drawHorizontalLine(0,40,128);
+		Display::drawHorizontalLine(0, 40, 128);
 
 		int i = 1;
 
-		for(std::list<String>::iterator it = not_icon.begin(); it!=not_icon.end(); it++){
+		for (std::list<String>::iterator it = not_icon.begin();
+		     it != not_icon.end(); it++) {
+			if (i > 109) break;
 
-			if(i>109)
-				break;
-		
-			if((*it)=="SMS"){
-				Display::drawXbm(i,44,LOGO_NOTIFICATION_WIDTH,LOGO_NOTIFICATION_HEIGHT,logo_sms);
-			}else if((*it)=="EMA"){
-				Display::drawXbm(i,44,LOGO_NOTIFICATION_WIDTH,LOGO_NOTIFICATION_HEIGHT,logo_email);
-			}else if((*it)=="FAC"){
-				Display::drawXbm(i,44,LOGO_NOTIFICATION_WIDTH,LOGO_NOTIFICATION_HEIGHT,logo_facebook);
-			}else if((*it)=="INS"){
-				Display::drawXbm(i,44,LOGO_NOTIFICATION_WIDTH,LOGO_NOTIFICATION_HEIGHT,logo_instagram);
-			}else if((*it)=="MES"){
-				Display::drawXbm(i,44,LOGO_NOTIFICATION_WIDTH,LOGO_NOTIFICATION_HEIGHT,logo_messenger);
-			}else if((*it)=="TEL"){
-				Display::drawXbm(i,44,LOGO_NOTIFICATION_WIDTH,LOGO_NOTIFICATION_HEIGHT,logo_telephone);
-			}else if((*it)=="WHA"){
-				Display::drawXbm(i,44,LOGO_NOTIFICATION_WIDTH,LOGO_NOTIFICATION_HEIGHT,logo_whatsapp);
-			}else{
-				Display::drawXbm(i,44,LOGO_NOTIFICATION_WIDTH,LOGO_NOTIFICATION_HEIGHT,logo_geral);
+			if ((*it) == "SMS") {
+				Display::drawXbm(i, 44, LOGO_NOTIFICATION_WIDTH,
+				                 LOGO_NOTIFICATION_HEIGHT, logo_sms);
+			} else if ((*it) == "EMA") {
+				Display::drawXbm(i, 44, LOGO_NOTIFICATION_WIDTH,
+				                 LOGO_NOTIFICATION_HEIGHT, logo_email);
+			} else if ((*it) == "FAC") {
+				Display::drawXbm(i, 44, LOGO_NOTIFICATION_WIDTH,
+				                 LOGO_NOTIFICATION_HEIGHT, logo_facebook);
+			} else if ((*it) == "INS") {
+				Display::drawXbm(i, 44, LOGO_NOTIFICATION_WIDTH,
+				                 LOGO_NOTIFICATION_HEIGHT, logo_instagram);
+			} else if ((*it) == "MES") {
+				Display::drawXbm(i, 44, LOGO_NOTIFICATION_WIDTH,
+				                 LOGO_NOTIFICATION_HEIGHT, logo_messenger);
+			} else if ((*it) == "TEL") {
+				Display::drawXbm(i, 44, LOGO_NOTIFICATION_WIDTH,
+				                 LOGO_NOTIFICATION_HEIGHT, logo_telephone);
+			} else if ((*it) == "WHA") {
+				Display::drawXbm(i, 44, LOGO_NOTIFICATION_WIDTH,
+				                 LOGO_NOTIFICATION_HEIGHT, logo_whatsapp);
+			} else {
+				Display::drawXbm(i, 44, LOGO_NOTIFICATION_WIDTH,
+				                 LOGO_NOTIFICATION_HEIGHT, logo_geral);
 			}
-		
-			i=i+18;
+
+			i = i + 18;
 		}
 
 		Display::display();
-
 	}
-	
 }
 
-void Home::but_up_left(){
-
-	if(frame_n>0){
+void Home::but_up_left() {
+	if (frame_n > 0) {
 		frame_n--;
 		display();
 	}
 }
 
-//void Home::but_up_right(){}
+// void Home::but_up_right(){}
 
-void Home::but_down_left(){
-
-	if(not_icon.empty()){
+void Home::but_down_left() {
+	if (not_icon.empty()) {
 		return;
 	}
 
-	if(frame_n<1){
+	if (frame_n < 1) {
 		frame_n++;
 		display();
-	}else{
+	} else {
 		App::run_app("Notification");
 	}
 }
 
-void Home::but_down_right(){
-		App::run_app("Menu");
+void Home::but_down_right() {
+	App::run_app("Menu");
 }
 
-void Home::bt_receive(char* message){
-
+void Home::bt_receive(char* message) {
 	unsigned char _hour, _minute, _second, _day, _month, _week_day;
 	int _year;
 
-	char * str, * context, delim[2];
+	char *str, *context, delim[2];
 
 	delim[0] = (char)0x03;
 	delim[1] = '\0';
 
 	Serial.println("ola");
 
-	str = strtok_r(message,delim,&context);
-	if(str==NULL)
-		return;
-	_hour=atoi(str);
+	str = strtok_r(message, delim, &context);
+	if (str == NULL) return;
+	_hour = atoi(str);
 
 	Serial.print("hour=");
 	Serial.println(str);
 
-	str = strtok_r(NULL,delim,&context);
-	if(str==NULL)
-		return;
-	_minute=atoi(str);
-	
-	str = strtok_r(NULL,delim,&context);
-	if(str==NULL)
-		return;
-	_second=atoi(str);
-	
-	str = strtok_r(NULL,delim,&context);
-	if(str==NULL)
-		return;
-	_day=atoi(str);
-	
-	str = strtok_r(NULL,delim,&context);
-	if(str==NULL)
-		return;
-	_month=atoi(str);
-	
-	str = strtok_r(NULL,delim,&context);
-	if(str==NULL)
-		return;
-	_year=atoi(str);
+	str = strtok_r(NULL, delim, &context);
+	if (str == NULL) return;
+	_minute = atoi(str);
 
-	str = strtok_r(NULL,"\0",&context);
-		if(str==NULL)
-		return;
-	_week_day=atoi(str);
+	str = strtok_r(NULL, delim, &context);
+	if (str == NULL) return;
+	_second = atoi(str);
 
-	xSemaphoreTake(mutex_home,portMAX_DELAY);
+	str = strtok_r(NULL, delim, &context);
+	if (str == NULL) return;
+	_day = atoi(str);
 
-	hour=_hour;
-	minute=_minute;
-	second=_second;
-	day=_day;
-	month=_month;
-	year=_year;
-	week_day=_week_day;
+	str = strtok_r(NULL, delim, &context);
+	if (str == NULL) return;
+	_month = atoi(str);
+
+	str = strtok_r(NULL, delim, &context);
+	if (str == NULL) return;
+	_year = atoi(str);
+
+	str = strtok_r(NULL, "\0", &context);
+	if (str == NULL) return;
+	_week_day = atoi(str);
+
+	xSemaphoreTake(mutex_home, portMAX_DELAY);
+
+	hour = _hour;
+	minute = _minute;
+	second = _second;
+	day = _day;
+	month = _month;
+	year = _year;
+	week_day = _week_day;
 
 	xSemaphoreGive(mutex_home);
 
 	display();
 }
 
-void Home::timer_1s(){
-
+void Home::timer_1s() {
 	unsigned char n;
 
-	xSemaphoreTake(mutex_home,portMAX_DELAY);
+	xSemaphoreTake(mutex_home, portMAX_DELAY);
 
-	if(second==59){
-		second=0;
-		if (minute==59)
-		{
-			minute=0;
-			if(hour==23){
-				hour=0;
-				if(week_day==7){
-					week_day=1;
-				}else{
+	if (second == 59) {
+		second = 0;
+		if (minute == 59) {
+			minute = 0;
+			if (hour == 23) {
+				hour = 0;
+				if (week_day == 7) {
+					week_day = 1;
+				} else {
 					week_day++;
 				}
 
-				if(month==2){
-					if( ( year % 4 == 0 && year % 100 != 0 ) || year % 400 == 0 ){
-						n=29;
-					}else{
-						n=28;
+				if (month == 2) {
+					if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) {
+						n = 29;
+					} else {
+						n = 28;
 					}
-				}else{
-					n = n_days_in_month[month-1];
+				} else {
+					n = n_days_in_month[month - 1];
 				}
 
-				if(day==n){
-					day=1;
-					if(month==12){
-						month=1;
+				if (day == n) {
+					day = 1;
+					if (month == 12) {
+						month = 1;
 						year++;
-					}else{
+					} else {
 						month++;
 					}
-				}else{
+				} else {
 					day++;
 				}
-			}else{
+			} else {
 				hour++;
 			}
-		}else{
+		} else {
 			minute++;
 		}
-	}else{
+	} else {
 		second++;
 	}
 
 	xSemaphoreGive(mutex_home);
 
-	if(curr_app()==this){
+	if (curr_app() == this) {
 		display();
 	}
 }
 
-void Home::notify(String title, String text, String icon){
-	
-	if (frame_n == 0){
+void Home::notify(String title, String text, String icon) {
+	if (frame_n == 0) {
 		frame_n = 1;
 	}
 
 	not_icon.push_front(icon);
 
-	for(std::list<String>::iterator it = not_icon.begin(); it!=not_icon.end(); it++){
-		if(it==not_icon.begin())
-			continue;
-		
-		if((*it)==icon){
+	for (std::list<String>::iterator it = not_icon.begin();
+	     it != not_icon.end(); it++) {
+		if (it == not_icon.begin()) continue;
+
+		if ((*it) == icon) {
 			not_icon.erase(it);
 			break;
 		}
 	}
-
 }
 
-void Home::delete_notification(String icon){
+void Home::delete_notification(String icon) {
 	not_icon.remove(icon);
 }
 
-timestamp Home::show_time(){
+timestamp Home::show_time() {
 	timestamp t;
-	t.hour=hour;
-	t.minute=minute;
-	t.second=second;
-	t.day=day;
-	t.month=month;
-	t.week_day=week_day;
-	t.year=year;
+	t.hour = hour;
+	t.minute = minute;
+	t.second = second;
+	t.day = day;
+	t.month = month;
+	t.week_day = week_day;
+	t.year = year;
 
 	return t;
 }
 
-Home::Home(String id_in, String name_in, const unsigned char* logo_in): App(id_in,name_in,logo_in) {
+Home::Home(String id_in, String name_in, const unsigned char* logo_in)
+	: App(id_in, name_in, logo_in) {
 	mutex_home = xSemaphoreCreateMutex();
 
-	xSemaphoreTake(mutex_home,portMAX_DELAY);
+	xSemaphoreTake(mutex_home, portMAX_DELAY);
 
-	hour=0;
-	minute=0;
-	second=0;
-	day=1;
-	month=1;
-	year=2000;
+	hour = 0;
+	minute = 0;
+	second = 0;
+	day = 1;
+	month = 1;
+	year = 2000;
 	week_day = 1;
 
 	xSemaphoreGive(mutex_home);
 
-	alarm1_en=false;
-	alarm2_en=false;
-	alarm3_en=false;
+	alarm1_en = false;
+	alarm2_en = false;
+	alarm3_en = false;
 
 	this->attach_timer();
 }
