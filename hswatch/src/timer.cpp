@@ -58,7 +58,7 @@ void Timer::display() {
 
 			Display::setFont(arial_10);
 			Display::setTextAlignment(center);
-			Display::drawString(64, 0, "Chronograph");
+			Display::drawString(64, 0, "Stopwatch");
 
 			Display::drawHorizontalLine(0, 12, 128);
 
@@ -476,7 +476,7 @@ void Timer::timer_1s() {
 					     buzzer_pattern_repeat, &timer_buzzer_task);
 
 					if (App::curr_app() != this) {
-						App::run_app("Chronograph & Timer");
+						App::run_app("Stopwatch & Timer");
 					} else {
 						display();
 					}

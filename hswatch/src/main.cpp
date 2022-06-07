@@ -87,7 +87,7 @@ void setup() {
 	new About("Abo", "About", NULL);
 
 	// App Initialization goes here
-	new Timer("CHR", "Chronograph & Timer", logo_timer);
+	new Timer("CHR", "Stopwatch & Timer", logo_timer);
 	new Alarm("ALA", "Alarm", logo_alarm);
 	new Weather("WEA", "Weather", logo_weather);
 	new FlashLight("FLA", "Flashlight", logo_flashlight);
