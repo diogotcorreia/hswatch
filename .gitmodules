@@ -1,0 +1,3 @@
+[submodule "Android/hswatch_connection_module"]
+	path = Android/hswatch_connection_module
+	url = https://github.com/HackerSchool/HSWatch-Connection-Submodule.git
