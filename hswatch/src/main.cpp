@@ -70,7 +70,7 @@ void setup() {
 	pinMode(B_RIGHT_UP, INPUT_PULLUP);
 	pinMode(B_RIGHT_DOWN, INPUT_PULLUP);
 
-	init_bluetooth("HSWatch");
+	init_bluetooth("Diogo's HSWatch");
 	init_led();
 	init_display();
 	init_vibrator();
